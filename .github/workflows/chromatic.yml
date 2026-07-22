@@ -30,9 +30,69 @@ jobs:
         run: npm ci
 
       - name: Publish to Chromatic
+        id: chromatic
         uses: chromaui/action@latest
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          # Permite a Chromatic publicar el check "UI Tests" / comentarios en el PR
           token: ${{ secrets.GITHUB_TOKEN }}
+          repositorySlug: Raul-Marin/storybook-bonico
           exitZeroOnChanges: true
+
+      # Workaround sin Chromatic GitHub App: publica el check "UI Tests" en el commit.
+      - name: Publish UI Tests status on GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_URL: ${{ steps.chromatic.outputs.buildUrl }}
+          STORYBOOK_URL: ${{ steps.chromatic.outputs.storybookUrl }}
+          CHANGE_COUNT: ${{ steps.chromatic.outputs.changeCount }}
+          ERROR_COUNT: ${{ steps.chromatic.outputs.errorCount }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          CHANGES="${CHANGE_COUNT:-0}"
+          ERRORS="${ERROR_COUNT:-0}"
+
+          if [ "$ERRORS" -gt 0 ]; then
+            STATE="failure"
+            DESC="Chromatic: ${ERRORS} error(s) — open build to debug"
+          elif [ "$CHANGES" -gt 0 ]; then
+            STATE="failure"
+            DESC="Chromatic: ${CHANGES} visual change(s) need review/accept"
+          else
+            STATE="success"
+            DESC="Chromatic: no visual changes"
+          fi
+
+          gh api \
+            --method POST \
+            "repos/${{ github.repository }}/statuses/${SHA}" \
+            -f state="$STATE" \
+            -f target_url="${BUILD_URL}" \
+            -f description="$DESC" \
+            -f context="UI Tests"
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BODY=$(cat <<EOF
+          ## Chromatic UI Tests
+
+          - **Status:** ${DESC}
+          - **Review build:** ${BUILD_URL}
+          - **Storybook:** ${STORYBOOK_URL}
+
+          Acepta o rechaza los cambios en Chromatic y vuelve a lanzar este workflow para actualizar el check en GitHub.
+          EOF
+          )
+            # Upsert comment marked by hidden anchor
+            EXISTING=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" --jq '.[] | select(.body | contains("<!-- chromatic-ui-tests -->")) | .id' | head -1 || true)
+            MARKED_BODY=$(printf '<!-- chromatic-ui-tests -->\n%s\n' "$BODY")
+            if [ -n "${EXISTING:-}" ]; then
+              gh api --method PATCH "repos/${{ github.repository }}/issues/comments/${EXISTING}" -f body="$MARKED_BODY" >/dev/null
+            else
+              gh api --method POST "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" -f body="$MARKED_BODY" >/dev/null
+            fi
+          fi
+
+          if [ "$STATE" != "success" ]; then
+            echo "::error::$DESC — $BUILD_URL"
+            exit 1
+          fi
