@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+  checks: write
+
 jobs:
   chromatic:
     runs-on: ubuntu-latest
@@ -27,4 +33,6 @@ jobs:
         uses: chromaui/action@latest
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          # Permite a Chromatic publicar el check "UI Tests" / comentarios en el PR
+          token: ${{ secrets.GITHUB_TOKEN }}
           exitZeroOnChanges: true
