@@ -68,10 +68,10 @@ export function AngularPrimaryDocs() {
         <UsageCard title="CSS variables (shared)">
           <ul>
             <li>
-              <code>--btn-primary-bg</code> → #c026d3
+              <code>--btn-primary-bg</code> → #000000
             </li>
             <li>
-              <code>--btn-primary-bg-hover</code> → #a21caf
+              <code>--btn-primary-bg-hover</code> → #262626
             </li>
             <li>
               <code>--btn-primary-text</code> → #ffffff
