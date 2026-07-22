@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="148" height="32" fill="none" viewBox="0 0 148 32">
+  <rect width="32" height="32" rx="9" fill="#2563EB"/>
+  <path fill="#fff" d="M10.2 9.1h5.1c2.85 0 4.55 1.45 4.55 3.55 0 1.5-.85 2.7-2.2 3.2 1.65.45 2.7 1.85 2.7 3.65 0 2.35-1.8 4-4.85 4H10.2V9.1Zm3.05 2.35v3.35h1.85c1.25 0 1.95-.55 1.95-1.7 0-1.1-.7-1.65-1.95-1.65h-1.85Zm0 5.55v3.85h2.15c1.45 0 2.25-.65 2.25-1.9s-.8-1.95-2.25-1.95H13.25Z"/>
+  <text x="42" y="21.5" fill="#0F172A" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="700" letter-spacing="-0.03em">Bonico</text>
+  <text x="98" y="21.5" fill="#64748B" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.02em">DS</text>
+</svg>

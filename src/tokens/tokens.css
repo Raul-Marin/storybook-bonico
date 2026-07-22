@@ -1,0 +1,69 @@
+/**
+ * Design tokens from Figma: Button — Storybook
+ * https://www.figma.com/design/pKo1uwKpBNRvPgmvrYj7BE/Button---Storybook
+ */
+:root {
+  /* Spacing */
+  --btn-gap: 8px;
+  --btn-padding-x-sm: 12px;
+  --btn-padding-y-sm: 6px;
+  --btn-padding-x-md: 16px;
+  --btn-padding-y-md: 10px;
+  --btn-padding-x-lg: 24px;
+  --btn-padding-y-lg: 14px;
+
+  /* Radius */
+  --btn-radius-sm: 6px;
+  --btn-radius-md: 8px;
+  --btn-radius-lg: 10px;
+
+  /* Border */
+  --btn-border-width: 1.5px;
+
+  /* Focus ring (from Figma focus variants) */
+  --btn-focus-ring: #f5bf00;
+  --btn-focus-ring-gap: #ffffff;
+
+  /* Typography */
+  --btn-font-family: 'Inter', system-ui, sans-serif;
+  --btn-font-size-sm: 13px;
+  --btn-line-height-sm: 18px;
+  --btn-font-weight-sm: 500;
+  --btn-font-size-md: 14px;
+  --btn-line-height-md: 20px;
+  --btn-font-weight-md: 500;
+  --btn-font-size-lg: 16px;
+  --btn-line-height-lg: 24px;
+  --btn-font-weight-lg: 600;
+
+  /* Spinner sizes */
+  --btn-spinner-sm: 14px;
+  --btn-spinner-md: 16px;
+  --btn-spinner-lg: 20px;
+
+  /* Disabled */
+  --btn-disabled-opacity: 0.65;
+
+  /* Primary */
+  --btn-primary-bg: #2563eb;
+  --btn-primary-bg-hover: #1d4ed8;
+  --btn-primary-bg-disabled: #93c5fd;
+  --btn-primary-text: #ffffff;
+  --btn-primary-text-disabled: #ffffff;
+
+  /* Secondary */
+  --btn-secondary-bg: #ffffff;
+  --btn-secondary-bg-hover: #f1f5f9;
+  --btn-secondary-bg-disabled: #f8fafc;
+  --btn-secondary-border: #cbd5e1;
+  --btn-secondary-text: #1e293b;
+  --btn-secondary-text-disabled: #94a3b8;
+
+  /* Ghost */
+  --btn-ghost-bg: #ffffff;
+  --btn-ghost-bg-hover: #f1f5f9;
+  --btn-ghost-bg-disabled: #ffffff;
+  --btn-ghost-border: #2563eb;
+  --btn-ghost-text: #2563eb;
+  --btn-ghost-text-disabled: #94a3b8;
+}

@@ -1,0 +1,42 @@
+/**
+ * Tipografías de Shift+R (https://shiftr-twitter.vercel.app/)
+ * Gooper → display / headings
+ * GT Walsheim → UI / body
+ */
+@font-face {
+  font-family: 'GT Walsheim Medium';
+  src: url('https://framerusercontent.com/assets/6kEeNyQwxT59TY7SpLEnehG2fc.woff2')
+    format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GT Walsheim Bold';
+  src: url('https://framerusercontent.com/assets/9yxOMHiOq1YW9lyV4OoKqGTdPeY.woff2')
+    format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gooper';
+  src: url('https://framerusercontent.com/assets/DCSKUGHcqx2mRKjOgNRFGWcjkU.woff2')
+    format('woff2');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-sans: 'GT Walsheim Medium', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-sans-bold: 'GT Walsheim Bold', 'GT Walsheim Medium', system-ui,
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-display: 'Gooper', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', monospace;
+}

@@ -1,0 +1,18 @@
+<button
+  [attr.type]="type"
+  [class]="hostClass"
+  [disabled]="isDisabled"
+  [attr.aria-busy]="loading || null"
+  [attr.data-loading]="loading || null"
+>
+  <img
+    *ngIf="loading"
+    class="btn__spinner"
+    [src]="spinnerSrc"
+    alt=""
+    aria-hidden="true"
+    [attr.width]="spinnerSize"
+    [attr.height]="spinnerSize"
+  />
+  <span class="btn__label">{{ label }}</span>
+</button>
