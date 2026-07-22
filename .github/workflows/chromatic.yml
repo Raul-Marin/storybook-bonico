@@ -37,7 +37,8 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
           repositorySlug: Raul-Marin/storybook-bonico
-          # Sin exitZeroOnChanges: exit 0 = passed/accepted, !=0 = cambios pendientes
+          # Importante: la Action pone true por defecto. Con false, exit 1 = cambios sin aprobar.
+          exitZeroOnChanges: false
 
       # Workaround sin Chromatic GitHub App: publica el check "UI Tests" en el commit.
       - name: Publish UI Tests status on GitHub
@@ -56,20 +57,19 @@ jobs:
           ERRORS="${ERROR_COUNT:-0}"
           CODE="${CHROMATIC_CODE:-1}"
 
-          # El exit code de Chromatic es la fuente de verdad (accepted => 0 aunque changeCount > 0)
-          if [ "$CHROMATIC_OUTCOME" = "success" ] || [ "$CODE" = "0" ]; then
-            STATE="success"
-            if [ "$CHANGES" -gt 0 ]; then
-              DESC="Chromatic: ${CHANGES} change(s) accepted"
-            else
-              DESC="Chromatic: no visual changes"
-            fi
-          elif [ "$ERRORS" -gt 0 ]; then
+          # outcome = resultado REAL antes de continue-on-error (failure si hay cambios sin aceptar)
+          if [ "$ERRORS" -gt 0 ]; then
             STATE="failure"
             DESC="Chromatic: ${ERRORS} error(s) — open build to debug"
-          else
+          elif [ "$CHROMATIC_OUTCOME" = "success" ] && [ "$CODE" = "0" ]; then
+            STATE="success"
+            DESC="Chromatic: passed (approved / no pending changes)"
+          elif [ "$CHANGES" -gt 0 ]; then
             STATE="failure"
             DESC="Chromatic: ${CHANGES} visual change(s) need review/accept"
+          else
+            STATE="failure"
+            DESC="Chromatic: build did not pass (code ${CODE})"
           fi
 
           TARGET_URL="${BUILD_URL:-https://www.chromatic.com/}"
@@ -90,7 +90,9 @@ jobs:
           - **Review build:** ${TARGET_URL}
           - **Storybook:** ${STORYBOOK_URL}
 
-          Acepta o rechaza los cambios en Chromatic y vuelve a lanzar este workflow para actualizar el check en GitHub.
+          1. Revisa y **Accept** en Chromatic
+          2. Re-run del workflow **Chromatic** en este PR
+          3. El check **UI Tests** pasará a verde
           EOF
           )
             EXISTING=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" --jq '.[] | select(.body | contains("<!-- chromatic-ui-tests -->")) | .id' | head -1 || true)
