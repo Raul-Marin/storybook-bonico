@@ -42,9 +42,9 @@ export const colorGroups: { title: string; description: string; tokens: ColorTok
     title: 'Primary',
     description: 'Brand action color. Use for primary buttons, chips, and key CTAs.',
     tokens: [
-      { name: 'Primary / BG', cssVar: '--btn-primary-bg', value: '#16a34a', description: 'Default fill' },
-      { name: 'Primary / BG Hover', cssVar: '--btn-primary-bg-hover', value: '#15803d', description: 'Hover fill' },
-      { name: 'Primary / BG Disabled', cssVar: '--btn-primary-bg-disabled', value: '#86efac', description: 'Disabled fill' },
+      { name: 'Primary / BG', cssVar: '--btn-primary-bg', value: '#c026d3', description: 'Default fill' },
+      { name: 'Primary / BG Hover', cssVar: '--btn-primary-bg-hover', value: '#a21caf', description: 'Hover fill' },
+      { name: 'Primary / BG Disabled', cssVar: '--btn-primary-bg-disabled', value: '#f0abfc', description: 'Disabled fill' },
       { name: 'Primary / Text', cssVar: '--btn-primary-text', value: '#ffffff', description: 'On-primary text' },
       { name: 'Primary / Text Disabled', cssVar: '--btn-primary-text-disabled', value: '#ffffff', description: 'On-primary disabled text' },
     ],

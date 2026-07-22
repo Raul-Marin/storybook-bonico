@@ -37,9 +37,11 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
           repositorySlug: Raul-Marin/storybook-bonico
-          # Sin exitZeroOnChanges: exit 0 = passed/accepted, !=0 = cambios pendientes
+          # false = exit 1 si hay cambios sin aceptar (la Action default es true)
+          exitZeroOnChanges: false
 
-      # Workaround sin Chromatic GitHub App: publica el check "UI Tests" en el commit.
+      # Workaround: la App Chromatic aún no publica UI Tests en este repo.
+      # Cuando la App esté vinculada, este step se puede quitar.
       - name: Publish UI Tests status on GitHub
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,49 +58,44 @@ jobs:
           ERRORS="${ERROR_COUNT:-0}"
           CODE="${CHROMATIC_CODE:-1}"
 
-          # El exit code de Chromatic es la fuente de verdad (accepted => 0 aunque changeCount > 0)
-          if [ "$CHROMATIC_OUTCOME" = "success" ] || [ "$CODE" = "0" ]; then
-            STATE="success"
-            if [ "$CHANGES" -gt 0 ]; then
-              DESC="Chromatic: ${CHANGES} change(s) accepted"
-            else
-              DESC="Chromatic: no visual changes"
-            fi
-          elif [ "$ERRORS" -gt 0 ]; then
+          if [ "$ERRORS" -gt 0 ]; then
             STATE="failure"
-            DESC="Chromatic: ${ERRORS} error(s) — open build to debug"
+            DESC="Chromatic: ${ERRORS} error(s)"
+          elif [ "$CHROMATIC_OUTCOME" = "success" ] && [ "$CODE" = "0" ]; then
+            STATE="success"
+            DESC="Chromatic: passed"
+          elif [ "$CHANGES" -gt 0 ]; then
+            STATE="failure"
+            DESC="Chromatic: ${CHANGES} change(s) need Accept"
           else
             STATE="failure"
-            DESC="Chromatic: ${CHANGES} visual change(s) need review/accept"
+            DESC="Chromatic: not passed (code ${CODE})"
           fi
 
           TARGET_URL="${BUILD_URL:-https://www.chromatic.com/}"
 
-          gh api \
-            --method POST \
-            "repos/${{ github.repository }}/statuses/${SHA}" \
+          gh api --method POST "repos/${{ github.repository }}/statuses/${SHA}" \
             -f state="$STATE" \
             -f target_url="$TARGET_URL" \
             -f description="$DESC" \
             -f context="UI Tests"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BODY=$(cat <<EOF
-          ## Chromatic UI Tests
-
-          - **Status:** ${DESC}
-          - **Review build:** ${TARGET_URL}
-          - **Storybook:** ${STORYBOOK_URL}
-
-          Acepta o rechaza los cambios en Chromatic y vuelve a lanzar este workflow para actualizar el check en GitHub.
-          EOF
-          )
-            EXISTING=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" --jq '.[] | select(.body | contains("<!-- chromatic-ui-tests -->")) | .id' | head -1 || true)
-            MARKED_BODY=$(printf '<!-- chromatic-ui-tests -->\n%s\n' "$BODY")
+            BODY=$(printf '%s\n' \
+              '<!-- chromatic-ui-tests -->' \
+              '## Chromatic UI Tests' \
+              '' \
+              "- **Status:** ${DESC}" \
+              "- **Review:** ${TARGET_URL}" \
+              "- **Storybook:** ${STORYBOOK_URL}" \
+              '' \
+              'Accept in Chromatic, then re-run this workflow (until the Chromatic GitHub App is linked).')
+            EXISTING=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+              --jq '.[] | select(.body | contains("<!-- chromatic-ui-tests -->")) | .id' | head -1 || true)
             if [ -n "${EXISTING:-}" ]; then
-              gh api --method PATCH "repos/${{ github.repository }}/issues/comments/${EXISTING}" -f body="$MARKED_BODY" >/dev/null
+              gh api --method PATCH "repos/${{ github.repository }}/issues/comments/${EXISTING}" -f body="$BODY" >/dev/null
             else
-              gh api --method POST "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" -f body="$MARKED_BODY" >/dev/null
+              gh api --method POST "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" -f body="$BODY" >/dev/null
             fi
           fi
 
