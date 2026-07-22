@@ -45,9 +45,9 @@
   --btn-disabled-opacity: 0.65;
 
   /* Primary */
-  --btn-primary-bg: #16a34a;
-  --btn-primary-bg-hover: #15803d;
-  --btn-primary-bg-disabled: #86efac;
+  --btn-primary-bg: #ea580c;
+  --btn-primary-bg-hover: #c2410c;
+  --btn-primary-bg-disabled: #fdba74;
   --btn-primary-text: #ffffff;
   --btn-primary-text-disabled: #ffffff;
 
