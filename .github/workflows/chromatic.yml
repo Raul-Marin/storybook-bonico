@@ -5,12 +5,6 @@ on:
     branches: [main]
   pull_request:
 
-permissions:
-  contents: read
-  pull-requests: write
-  statuses: write
-  checks: write
-
 jobs:
   chromatic:
     runs-on: ubuntu-latest
@@ -30,81 +24,9 @@ jobs:
         run: npm ci
 
       - name: Publish to Chromatic
-        id: chromatic
-        continue-on-error: true
         uses: chromaui/action@latest
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          repositorySlug: Raul-Marin/storybook-bonico
-          # Importante: la Action pone true por defecto. Con false, exit 1 = cambios sin aprobar.
-          exitZeroOnChanges: false
-
-      # Workaround sin Chromatic GitHub App: publica el check "UI Tests" en el commit.
-      - name: Publish UI Tests status on GitHub
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUILD_URL: ${{ steps.chromatic.outputs.buildUrl }}
-          STORYBOOK_URL: ${{ steps.chromatic.outputs.storybookUrl }}
-          CHANGE_COUNT: ${{ steps.chromatic.outputs.changeCount }}
-          ERROR_COUNT: ${{ steps.chromatic.outputs.errorCount }}
-          CHROMATIC_CODE: ${{ steps.chromatic.outputs.code }}
-          CHROMATIC_OUTCOME: ${{ steps.chromatic.outcome }}
-          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -euo pipefail
-          CHANGES="${CHANGE_COUNT:-0}"
-          ERRORS="${ERROR_COUNT:-0}"
-          CODE="${CHROMATIC_CODE:-1}"
-
-          # outcome = resultado REAL antes de continue-on-error (failure si hay cambios sin aceptar)
-          if [ "$ERRORS" -gt 0 ]; then
-            STATE="failure"
-            DESC="Chromatic: ${ERRORS} error(s) — open build to debug"
-          elif [ "$CHROMATIC_OUTCOME" = "success" ] && [ "$CODE" = "0" ]; then
-            STATE="success"
-            DESC="Chromatic: passed (approved / no pending changes)"
-          elif [ "$CHANGES" -gt 0 ]; then
-            STATE="failure"
-            DESC="Chromatic: ${CHANGES} visual change(s) need review/accept"
-          else
-            STATE="failure"
-            DESC="Chromatic: build did not pass (code ${CODE})"
-          fi
-
-          TARGET_URL="${BUILD_URL:-https://www.chromatic.com/}"
-
-          gh api \
-            --method POST \
-            "repos/${{ github.repository }}/statuses/${SHA}" \
-            -f state="$STATE" \
-            -f target_url="$TARGET_URL" \
-            -f description="$DESC" \
-            -f context="UI Tests"
-
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BODY=$(cat <<EOF
-          ## Chromatic UI Tests
-
-          - **Status:** ${DESC}
-          - **Review build:** ${TARGET_URL}
-          - **Storybook:** ${STORYBOOK_URL}
-
-          1. Revisa y **Accept** en Chromatic
-          2. Re-run del workflow **Chromatic** en este PR
-          3. El check **UI Tests** pasará a verde
-          EOF
-          )
-            EXISTING=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" --jq '.[] | select(.body | contains("<!-- chromatic-ui-tests -->")) | .id' | head -1 || true)
-            MARKED_BODY=$(printf '<!-- chromatic-ui-tests -->\n%s\n' "$BODY")
-            if [ -n "${EXISTING:-}" ]; then
-              gh api --method PATCH "repos/${{ github.repository }}/issues/comments/${EXISTING}" -f body="$MARKED_BODY" >/dev/null
-            else
-              gh api --method POST "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" -f body="$MARKED_BODY" >/dev/null
-            fi
-          fi
-
-          if [ "$STATE" != "success" ]; then
-            echo "::error::$DESC — $TARGET_URL"
-            exit 1
-          fi
+          # Con la Chromatic GitHub App, el check UI Tests lo publica Chromatic.
+          # exitZeroOnChanges (default true) evita que Actions falle; la App bloquea el merge.
